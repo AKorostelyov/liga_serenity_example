@@ -9,9 +9,12 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <serenity.version>3.2.1</serenity.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <serenity.version>2.0.52</serenity.version>
+        <serenity.maven.version>2.0.52</serenity.maven.version>
+        <serenity.cucumber.version>1.0.14</serenity.cucumber.version>
+        <cucumber.version>4.2.0</cucumber.version>
     </properties>
 
     <dependencies>
@@ -20,7 +23,23 @@
             <artifactId>serenity-core</artifactId>
             <version>${serenity.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.cucumber</groupId>
+                    <artifactId>cucumber-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>io.cucumber</groupId>-->
+        <!--            <artifactId>cucumber-junit</artifactId>-->
+        <!--            <version>${cucumber.version}</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-junit</artifactId>
@@ -28,10 +47,21 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-cucumber4</artifactId>
+            <version>${serenity.cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>java-hamcrest</artifactId>
             <version>2.0.0.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit4</artifactId>
+            <version>2.10.0</version>
         </dependency>
     </dependencies>
 
@@ -42,17 +72,33 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M4</version>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>false</skip>
+                    <testFailureIgnore>false</testFailureIgnore>
+                    <argLine>-javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/1.8.10/aspectjweaver-1.8.10.jar"</argLine>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>io.qameta.allure.junit4.AllureJunit4</value>
+                        </property>
+                    </properties>
+                    <systemProperties>
+                        <property>
+                            <name>allure.results.directory</name>
+                            <value>${project.build.directory}/allure-results</value>
+                        </property>
+                    </systemProperties>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjweaver</artifactId>
+                        <version>1.8.10</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.0.0-M5</version>
-                <configuration>
-                    <includes>
-                        <include>**/Simple*.java</include>
-                    </includes>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -61,6 +107,37 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>net.serenity-bdd.maven.plugins</groupId>
+                <artifactId>serenity-maven-plugin</artifactId>
+                <version>${serenity.maven.version}</version>
+                <executions>
+                    <execution>
+                        <id>serenity-reports</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>2.10.0</version>
+                <configuration>
+                    <reportVersion>2.10.0</reportVersion>
+                </configuration>
             </plugin>
         </plugins>
     </build>
